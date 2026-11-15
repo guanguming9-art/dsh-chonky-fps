@@ -15,7 +15,9 @@ Four tiers, locked on selection: Normal dive 60Hz, Soft & squishy 90Hz, Bubble d
 
 ## What it does not do
 
-The plugin cannot change your hardware or browser ceiling. A 60Hz screen cannot show 120 frames per second, and the page says so instead of pretending. It does not raise frame rates in games or video — it only affects DSH's own UI.
+**It cannot raise your real frame rate.** The plugin cannot change your hardware or browser ceiling. On a 60Hz screen, picking the 144Hz tier does not make the screen run at 144 frames per second: the page reports it honestly as *"Not locked: the screen tops out near 60Hz, so 144Hz is unreachable"* instead of pretending it worked. That message is the correct behaviour, not a fault — expecting 144 real frames on a 60Hz panel is the misconception.
+
+It does not raise frame rates in games or video either — it only affects DSH's own UI.
 
 Frame rate is unrelated to tokens: raising or lowering it neither adds nor saves tokens, and the plugin never calls a model.
 
@@ -25,7 +27,11 @@ Frame rate is unrelated to tokens: raising or lowering it neither adds nor saves
 dsh plugin --profile web add dsh-chonky-fps
 ```
 
-Or install it from the plugin market. Refresh the Web page afterwards; on the phone enable it under Settings → Plugins and restart the engine if the tiers do not appear.
+Or install it from the plugin market.
+
+> **Restart the engine after installing.** `dsh plugin add` writes the plugin row to your profile but does not reload it. Until you restart, the engine can fail on startup with `patch: entry "<id>" not found`, and the dsh-go panel reports *"plugin disabled or not found"*. Restart the engine (App → Engine → Restart, or restart `dsh web`), then refresh the Web page; on the phone enable it under **Settings → Plugins**.
+
+If the tiers still do not appear after a restart, restart once more: the first start after an install is the one that picks the new plugin up.
 
 ## Tiers
 

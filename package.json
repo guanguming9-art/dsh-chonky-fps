@@ -1,6 +1,6 @@
 {
   "name": "dsh-chonky-fps",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "大肥鱼专属帧率模式：四档锁定帧率（60/90/120/144Hz），带网页设置页与 dsh-go 原生面板。此帧率模式仅用于 DSH。",
   "type": "module",
   "license": "MIT",
