@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Chonky frame-rate mode",
+    "description": "Four Chonky tiers: Normal dive 60Hz, Soft & squishy 90Hz, Bubble dash 120Hz, Full-speed tail whip 144Hz. The chosen tier is locked at or above that rate, and the page shows the lock state plus your measured screen refresh rate. This frame-rate mode is for DSH only."
+  }
+}
