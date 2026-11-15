@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>dsh-chonky-fps · 大肥鱼专属帧率模式</title>
+<meta name="description" content="DSH 的四档帧率插件：普通潜水中 60Hz、软乎乎档 90Hz、泡泡快跑档 120Hz、满速甩尾档 144Hz。此帧率模式仅用于 DSH。">
+<style>
+  :root{
+    --ink:#0f1720; --ink2:#3d4c5c; --muted:#6b7a8c;
+    --bg:#f7f9fb; --card:#ffffff; --line:#e3e9ef;
+    --sea:#0d6e6e; --sea2:#12a3a3; --sand:#f0a63c; --warn:#b45309; --ok:#15803d;
+    --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink:#e9eef4; --ink2:#c2cddb; --muted:#8d9cad;
+      --bg:#0d1419; --card:#141d25; --line:#23303b;
+      --sea:#3fd0c9; --sea2:#7de7e0; --sand:#f2b45c; --warn:#f0a95c; --ok:#5ddc94;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+    line-height:1.7; font-size:16px;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 20px 72px}
+  a{color:var(--sea)}
+
+  header{
+    position:relative; overflow:hidden;
+    background:linear-gradient(160deg,#08343a 0%,#0d5d63 55%,#12807f 100%);
+    color:#eafaf8; padding:52px 20px 62px; text-align:center;
+  }
+  header .inner{max-width:760px;margin:0 auto;position:relative;z-index:2}
+  .badge{
+    display:inline-block; font-size:12.5px; letter-spacing:.08em;
+    padding:5px 12px; border-radius:999px;
+    border:1px solid rgba(234,250,248,.35); color:#bfeeea; margin-bottom:18px;
+  }
+  h1{margin:0 0 10px; font-size:30px; line-height:1.25; letter-spacing:-.01em}
+  .sub{margin:0; color:#a9dfda; font-size:15.5px}
+  .fish{font-size:44px; display:block; margin-bottom:10px}
+  .waves{position:absolute; left:0; right:0; bottom:-2px; z-index:1; opacity:.5}
+
+  .notice{
+    margin:26px 0 0; background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.22);
+    border-radius:12px; padding:12px 16px; font-size:14.5px; color:#d8f5f2;
+  }
+
+  h2{
+    font-size:20px; margin:44px 0 14px; padding-bottom:9px;
+    border-bottom:1px solid var(--line); letter-spacing:-.01em;
+  }
+  h2 .n{
+    display:inline-block; width:24px; height:24px; line-height:24px; text-align:center;
+    border-radius:7px; background:var(--sea); color:#fff; font-size:13px;
+    margin-right:9px; vertical-align:2px;
+  }
+  p{margin:0 0 14px; color:var(--ink2)}
+  ul{margin:0 0 16px; padding-left:0; list-style:none}
+  ul li{position:relative; padding-left:22px; margin-bottom:11px; color:var(--ink2)}
+  ul li::before{
+    content:""; position:absolute; left:4px; top:10px;
+    width:7px; height:7px; border-radius:50%; background:var(--sea2);
+  }
+  strong{color:var(--ink)}
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.9em;
+    background:rgba(13,110,110,.1); color:var(--sea);
+    padding:2px 6px; border-radius:5px;
+  }
+  @media (prefers-color-scheme: dark){ code{background:rgba(63,208,201,.14)} }
+
+  .tiers{display:grid; gap:12px; grid-template-columns:1fr; margin:0 0 16px}
+  @media (min-width:560px){ .tiers{grid-template-columns:1fr 1fr} }
+  .tier{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 18px; position:relative; overflow:hidden;
+  }
+  .tier::after{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--sea2);
+  }
+  .tier.hi::after{background:var(--sand)}
+  .tier .name{font-weight:700; font-size:16.5px; margin-bottom:3px}
+  .tier .hz{font-family:ui-monospace,Menlo,monospace; font-size:26px; font-weight:700; color:var(--sea); line-height:1.2}
+  .tier.hi .hz{color:var(--sand)}
+  .tier .id{font-size:12.5px; color:var(--muted); font-family:ui-monospace,Menlo,monospace; margin-top:4px}
+  .tier .bar{height:5px; border-radius:3px; background:var(--line); margin-top:10px; overflow:hidden}
+  .tier .bar i{display:block; height:100%; border-radius:3px; background:linear-gradient(90deg,var(--sea2),var(--sea))}
+  .tier.hi .bar i{background:linear-gradient(90deg,var(--sand),#e8892b)}
+
+  .box{
+    background:var(--card); border:1px solid var(--line); border-left:4px solid var(--warn);
+    border-radius:12px; padding:16px 18px; margin:0 0 16px;
+  }
+  .box.ok{border-left-color:var(--ok)}
+  .box .t{font-weight:700; margin-bottom:6px; color:var(--ink)}
+  .box p:last-child{margin-bottom:0}
+
+  .cmd{
+    background:#0c1518; color:#d8f5f2; border-radius:12px; padding:16px 18px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:14.5px; overflow-x:auto; margin:0 0 14px; white-space:pre;
+  }
+  .cmd .p{color:#5ddc94; user-select:none}
+
+  table{width:100%; border-collapse:collapse; font-size:14.5px; margin:0 0 16px}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line)}
+  th{font-size:13px; color:var(--muted); font-weight:600; letter-spacing:.02em}
+  tbody tr:last-child td{border-bottom:none}
+  td code{font-size:12.5px}
+
+  .link{
+    display:flex; align-items:center; gap:12px; text-decoration:none;
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:14px 16px; margin-bottom:10px; color:var(--ink);
+  }
+  .link:hover{border-color:var(--sea)}
+  .link .ic{
+    flex:0 0 auto; width:34px; height:34px; border-radius:9px;
+    background:rgba(13,110,110,.12); color:var(--sea);
+    display:flex; align-items:center; justify-content:center; font-size:17px;
+  }
+  .link .tx{min-width:0}
+  .link .tx b{display:block; font-size:15px; font-weight:600}
+  .link .tx span{display:block; font-size:12.5px; color:var(--muted); word-break:break-all}
+
+  footer{
+    margin-top:52px; padding-top:22px; border-top:1px solid var(--line);
+    font-size:13px; color:var(--muted); text-align:center;
+  }
+  .tag{
+    display:inline-block; font-size:12px; padding:2px 9px; border-radius:999px;
+    background:rgba(13,110,110,.1); color:var(--sea); margin-right:6px; margin-bottom:6px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <span class="badge">DeepSeek Harness 插件</span>
+    <span class="fish">🐟</span>
+    <h1>dsh-chonky-fps</h1>
+    <p class="sub">大肥鱼专属帧率模式 · 四档锁定帧率</p>
+    <div class="notice">此帧率模式仅用于 DSH。</div>
+  </div>
+  <svg class="waves" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 60 C 220 20 420 90 720 58 C 1020 26 1240 78 1440 50 L1440 90 L0 90 Z" fill="#f7f9fb" opacity=".55"/>
+    <path d="M0 72 C 260 40 480 96 760 68 C 1040 40 1260 88 1440 66 L1440 90 L0 90 Z" fill="#f7f9fb" opacity=".9"/>
+  </svg>
+</header>
+
+<div class="wrap">
+
+  <h2><span class="n">1</span>它做什么</h2>
+  <ul>
+    <li>在 DSH 网页版<strong>设置</strong>里新增「大肥鱼专属帧率模式」一页，四档单选。</li>
+    <li>在 dsh-go 手机 App 里提供原生面板（插件页、全部功能、对话详情、输入框「+」），档位与网页共用一份值。</li>
+    <li>选中的档位会锁定：预览轨迹按该档的帧间隔推进，切回标签页会重新确认；档位同时写到 <code>data-frame-mode</code> 和 CSS 变量 <code>--dsh-frame-hz</code>，页面可据此统一刷新节奏。</li>
+    <li>实测屏幕刷新率，并显示锁定状态：够得到显示「已锁定 ≥120Hz（实测 121Hz）」，够不到显示「未锁定：屏幕最高约 60Hz，跑不到 120Hz」。</li>
+  </ul>
+
+  <h2><span class="n">2</span>它不做什么</h2>
+
+  <div class="box">
+    <div class="t">它提不了你的真实帧率</div>
+    <p>插件改变不了硬件和浏览器的真实上限。屏幕是 60Hz 时，选 144Hz 档并不会让屏幕跑到 144 帧：页面会如实显示「未锁定：屏幕最高约 60Hz，跑不到 144Hz」，而不是假装成功。</p>
+    <p><strong>这条提示是正确行为，不是故障</strong>；在 60Hz 屏上指望 144 帧才是误解。</p>
+  </div>
+
+  <p>它也不会提高游戏或视频的帧率——它只作用于 DSH 自己的界面。</p>
+  <p>帧率与 token 无关：调高或调低都不会增加或减少 token，插件全程不调用模型。</p>
+
+  <h2><span class="n">3</span>四档帧率</h2>
+
+  <div class="tiers">
+    <div class="tier">
+      <div class="name">普通潜水中</div>
+      <div class="hz">60Hz</div>
+      <div class="bar"><i style="width:42%"></i></div>
+      <div class="id">dsh-chonky-fps-60</div>
+    </div>
+    <div class="tier">
+      <div class="name">软乎乎档</div>
+      <div class="hz">90Hz</div>
+      <div class="bar"><i style="width:62%"></i></div>
+      <div class="id">dsh-chonky-fps-90</div>
+    </div>
+    <div class="tier">
+      <div class="name">泡泡快跑档</div>
+      <div class="hz">120Hz</div>
+      <div class="bar"><i style="width:83%"></i></div>
+      <div class="id">dsh-chonky-fps-120</div>
+    </div>
+    <div class="tier hi">
+      <div class="name">满速甩尾档</div>
+      <div class="hz">144Hz</div>
+      <div class="bar"><i style="width:100%"></i></div>
+      <div class="id">dsh-chonky-fps-144</div>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>档位</th><th>帧率</th><th>包内 id</th></tr></thead>
+    <tbody>
+      <tr><td>普通潜水中</td><td>60Hz</td><td><code>dsh-chonky-fps-60</code></td></tr>
+      <tr><td>软乎乎档</td><td>90Hz</td><td><code>dsh-chonky-fps-90</code></td></tr>
+      <tr><td>泡泡快跑档</td><td>120Hz</td><td><code>dsh-chonky-fps-120</code></td></tr>
+      <tr><td>满速甩尾档</td><td>144Hz</td><td><code>dsh-chonky-fps-144</code></td></tr>
+    </tbody>
+  </table>
+
+  <p>状态文件：<code>~/.dsh/chonky-fps.json</code>。删除该文件即回到 60Hz 默认档。</p>
+
+  <h2><span class="n">4</span>安装</h2>
+
+  <div class="cmd"><span class="p">$</span> dsh plugin --profile web add dsh-chonky-fps</div>
+
+  <p>或从插件市场安装。</p>
+
+  <div class="box">
+    <div class="t">装完一定要重启引擎</div>
+    <p><code>dsh plugin add</code> 只把插件行写进 profile，不会重新加载它。不重启时，引擎启动可能报 <code>patch: entry "&lt;id&gt;" not found</code>，手机端面板也会显示「插件已停用或找不到」。</p>
+    <p>请在 App 的「引擎」页点重启（或重启 <code>dsh web</code>），然后刷新网页；手机端再到 <strong>设置 → 插件</strong> 里启用。</p>
+    <p>重启后仍看不到档位，就再重启一次——安装后的第一次启动才是真正加载新插件的那次。</p>
+  </div>
+
+  <h2><span class="n">5</span>链接</h2>
+
+  <a class="link" href="https://www.npmjs.com/package/dsh-chonky-fps">
+    <span class="ic">📦</span>
+    <span class="tx"><b>npm 包</b><span>npmjs.com/package/dsh-chonky-fps · 当前 2.0.1</span></span>
+  </a>
+  <a class="link" href="https://github.com/guanguming9-art/dsh-chonky-fps">
+    <span class="ic">🦈</span>
+    <span class="tx"><b>GitHub 仓库</b><span>github.com/guanguming9-art/dsh-chonky-fps</span></span>
+  </a>
+
+  <div style="margin-top:20px">
+    <span class="tag">MIT</span>
+    <span class="tag">DSH only</span>
+    <span class="tag">不耗 token</span>
+  </div>
+
+  <footer>
+    此页面是仓库说明的中文翻译版，可离线打开。<br>
+    dsh-chonky-fps v2.0.1 · 2026-11-15
+  </footer>
+
+</div>
+</body>
+</html>
